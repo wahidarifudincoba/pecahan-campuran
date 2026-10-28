@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dunia Pecahan Campuran - Kelas 5 SD</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #f0fdf4;
+    }
+    .font-heading {
+      font-family: 'Fredoka One', cursive;
+    }
+    .fraction-display {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      font-weight: bold;
+    }
+    .fraction-stacked {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+    .fraction-line {
+      width: 100%;
+      height: 3px;
+      background-color: currentColor;
+      margin: 2px 0;
+      border-radius: 2px;
+    }
+    .shape-part {
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+    }
+    .shape-part:hover {
+      filter: brightness(0.9) scale(1.02);
+    }
+    .bounce-gentle {
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .pulse-correct {
+      animation: pulseGreen 0.6s ease-in-out;
+    }
+    @keyframes pulseGreen {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); background-color: #dcfce7; }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
+
+  <!-- Header & Navigasi -->
+  <header class="bg-amber-400 border-b-4 border-amber-500 shadow-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="bg-white p-2 rounded-2xl shadow-inner text-amber-500 font-heading text-2xl rotate-3">
+          🍰
+        </div>
+        <div>
+          <h1 class="font-heading text-2xl sm:text-3xl text-amber-950 tracking-wide">Pecahan Campuran</h1>
+          <p class="text-xs sm:text-sm font-semibold text-amber-900">Media Pembelajaran Interaktif Kelas 5 SD</p>
+        </div>
+      </div>
+
+      <!-- Tab Switcher -->
+      <div class="flex bg-amber-200/80 p-1.5 rounded-2xl border-2 border-amber-400 w-full sm:w-auto">
+        <button id="btn-tab-demo" onclick="switchTab('demo')" class="flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-white text-amber-900">
+          🎨 Mode Demonstrasi
+        </button>
+        <button id="btn-tab-quiz" onclick="switchTab('quiz')" class="flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all text-amber-800 hover:text-amber-950">
+          🎮 Latihan Soal
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full">
+
+    <!-- ================= TAB 1: DEMONSTRASI ================= -->
+    <section id="section-demo" class="space-y-6">
+      
+      <!-- Panel Kontrol Demonstrasi -->
+      <div class="bg-white rounded-3xl p-6 border-4 border-sky-200 shadow-xl relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-24 h-24 bg-sky-100 rounded-full blur-xl pointer-events-none"></div>
+        <h2 class="font-heading text-xl text-sky-800 mb-4 flex items-center gap-2">
+          ⚙️ Pengaturan Pecahan
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- Input Angka -->
+          <div class="lg:col-span-7 bg-sky-50/70 p-4 rounded-2xl border-2 border-sky-200">
+            <p class="text-xs font-bold text-sky-700 uppercase tracking-wider mb-3">Bentuk Pecahan Campuran:</p>
+            
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+              <!-- Bilangan Bulat -->
+              <div class="text-center">
+                <label class="block text-xs font-bold text-slate-600 mb-1">Utuh (Bulat)</label>
+                <div class="flex items-center border-2 border-sky-300 rounded-xl bg-white p-1 shadow-sm">
+                  <button onclick="updateDemoInput('whole', -1)" class="w-8 h-8 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-lg">-</button>
+                  <span id="demo-whole-val" class="w-10 text-center font-heading text-xl text-sky-900">1</span>
+                  <button onclick="updateDemoInput('whole', 1)" class="w-8 h-8 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-lg">+</button>
+                </div>
+              </div>
+
+              <!-- Pembilang / Penyebut Stacked -->
+              <div class="fraction-stacked bg-white p-2 border-2 border-sky-300 rounded-xl shadow-sm">
+                <!-- Pembilang -->
+                <div class="flex items-center">
+                  <button onclick="updateDemoInput('num', -1)" class="w-7 h-7 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-sm">-</button>
+                  <span id="demo-num-val" class="w-8 text-center font-heading text-lg text-sky-900">2</span>
+                  <button onclick="updateDemoInput('num', 1)" class="w-7 h-7 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-sm">+</button>
+                </div>
+                <div class="fraction-line my-1 !bg-sky-400"></div>
+                <!-- Penyebut -->
+                <div class="flex items-center">
+                  <button onclick="updateDemoInput('den', -1)" class="w-7 h-7 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-sm">-</button>
+                  <span id="demo-den-val" class="w-8 text-center font-heading text-lg text-sky-900">3</span>
+                  <button onclick="updateDemoInput('den', 1)" class="w-7 h-7 rounded-lg bg-sky-100 font-bold text-sky-700 hover:bg-sky-200 text-sm">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Opsi Visual -->
+          <div class="lg:col-span-5 space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 mb-1">Bentuk Visualisasi:</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button id="btn-shape-rect" onclick="setDemoShape('rect')" class="py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-emerald-400 bg-emerald-50 text-emerald-800 flex items-center justify-center gap-2">
+                  <span>🟧</span> Balok / Kotak
+                </button>
+                <button id="btn-shape-circle" onclick="setDemoShape('circle')" class="py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-slate-200 bg-white text-slate-600 hover:border-emerald-300 flex items-center justify-center gap-2">
+                  <span>🍕</span> Lingkaran
+                </button>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button onclick="autoFillDemo()" class="flex-1 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-2 border-indigo-200 rounded-xl font-bold text-xs flex items-center justify-center gap-1">
+                🪄 Isi Sesuai Pecahan
+              </button>
+              <button onclick="resetDemoShading()" class="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border-2 border-rose-200 rounded-xl font-bold text-xs">
+                🔄 Kosongkan
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Area Visualisasi Canvas Interactive -->
+      <div class="bg-white rounded-3xl p-6 border-4 border-indigo-100 shadow-xl">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="font-heading text-lg text-slate-800">Visualisasi Interaktif</h3>
+            <p class="text-xs text-slate-500">Klik potongan untuk mengarsir/mewarnai secara manual!</p>
+          </div>
+          <div id="demo-stats-badge" class="bg-indigo-50 border border-indigo-200 px-4 py-1.5 rounded-full font-bold text-xs text-indigo-700">
+            Total Arsiran: <span id="stat-shaded-count" class="text-sm font-heading text-indigo-900">5</span> Potong
+          </div>
+        </div>
+
+        <!-- Wadah Gambar Shapes -->
+        <div id="demo-visual-container" class="flex flex-wrap items-center justify-center gap-6 py-6 min-h-[220px] bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200 p-4">
+          <!-- Inject SVG / HTML shapes secara otomatis -->
+        </div>
+
+        <!-- Penjelas Konversi Formula Matematika -->
+        <div class="mt-6 p-4 bg-amber-50/80 rounded-2xl border-2 border-amber-200 text-amber-950">
+          <h4 class="font-heading text-sm text-amber-900 mb-2 flex items-center gap-2">
+            💡 Cara Memahami Pecahan Ini:
+          </h4>
+          <div class="flex flex-col md:flex-row items-center justify-around gap-4 text-center md:text-left text-sm">
+            <div>
+              <span class="font-bold">Bentuk Pecahan Campuran:</span>
+              <div class="mt-1 flex items-center justify-center md:justify-start gap-1 font-heading text-xl text-amber-900">
+                <span id="exp-whole">1</span>
+                <div class="fraction-stacked">
+                  <span id="exp-num">2</span>
+                  <div class="fraction-line !bg-amber-800"></div>
+                  <span id="exp-den">3</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden md:block text-amber-300 text-xl font-bold">➔</div>
+
+            <div>
+              <span class="font-bold">Proses Konversi ke Pecahan Biasa:</span>
+              <div class="mt-1 font-mono text-xs md:text-sm bg-white/80 p-2 rounded-xl border border-amber-300">
+                <span id="exp-formula">(1 × 3) + 2</span> / <span id="exp-formula-den">3</span> = <span id="exp-formula-res">5/3</span>
+              </div>
+            </div>
+
+            <div class="hidden md:block text-amber-300 text-xl font-bold">➔</div>
+
+            <div>
+              <span class="font-bold">Bentuk Pecahan Biasa:</span>
+              <div class="mt-1 flex items-center justify-center md:justify-start font-heading text-xl text-emerald-700">
+                <div class="fraction-stacked">
+                  <span id="exp-improper-num">5</span>
+                  <div class="fraction-line !bg-emerald-700"></div>
+                  <span id="exp-improper-den">3</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ================= TAB 2: LATIHAN SOAL ================= -->
+    <section id="section-quiz" class="space-y-6 hidden">
+      
+      <!-- Dashboard Skor & Level -->
+      <div class="bg-white rounded-3xl p-4 sm:p-6 border-4 border-amber-200 shadow-xl flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl font-heading text-amber-600">
+            ⭐
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Skor Kamu</div>
+            <div id="quiz-score" class="font-heading text-2xl sm:text-3xl text-amber-600">0</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-2xl font-heading text-orange-600">
+            🔥
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Beruntun</div>
+            <div id="quiz-streak" class="font-heading text-2xl sm:text-3xl text-orange-600">0</div>
+          </div>
+        </div>
+
+        <button onclick="toggleAnswerMode()" id="btn-toggle-input-mode" class="hidden sm:flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-bold text-slate-700 border border-slate-300">
+          ⚙️ Opsi: <span id="text-input-mode">Isian Pecahan</span>
+        </button>
+      </div>
+
+      <!-- Card Soal Utama -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border-4 border-indigo-200 shadow-xl relative">
+        
+        <!-- Header Tipe Soal -->
+        <div class="flex items-center justify-between mb-6">
+          <span id="quiz-type-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">
+            Tipe Soal A
+          </span>
+          <span class="text-xs font-bold text-slate-400">Soal <span id="quiz-number">1</span></span>
+        </div>
+
+        <!-- Deskripsi Pertanyaan -->
+        <div id="quiz-question-text" class="font-heading text-xl sm:text-2xl text-slate-800 text-center mb-6">
+          Loading soal...
+        </div>
+
+        <!-- Area Interaktif Soal (Bisa Gambar Interaktif / Statis) -->
+        <div id="quiz-interactive-area" class="min-h-[160px] bg-slate-50 rounded-2xl border-2 border-slate-200 p-4 flex flex-wrap items-center justify-center gap-4 mb-6">
+          <!-- Inject konten dinamis berdasarkan tipe soal -->
+        </div>
+
+        <!-- Area Jawaban -->
+        <div id="quiz-answer-area" class="p-4 bg-indigo-50/60 rounded-2xl border-2 border-indigo-100 flex flex-col items-center gap-4">
+          
+          <!-- Mode 1: Custom Math Fraction Input -->
+          <div id="answer-mode-input" class="flex items-center justify-center gap-3">
+            <span class="font-bold text-slate-600 text-sm">Jawabanmu:</span>
+            
+            <div class="flex items-center gap-2">
+              <!-- Input Bilangan Bulat (Opsional jika pecahan campuran) -->
+              <input type="number" id="ans-input-whole" placeholder="1" min="0" max="20" class="w-14 h-14 text-center font-heading text-2xl border-2 border-indigo-300 rounded-2xl focus:border-indigo-500 focus:outline-none shadow-sm bg-white">
+              
+              <!-- Stacked Input Pembilang/Penyebut -->
+              <div id="ans-stacked-container" class="fraction-stacked bg-white p-2 border-2 border-indigo-300 rounded-2xl shadow-sm">
+                <input type="number" id="ans-input-num" placeholder="2" min="0" max="50" class="w-12 h-10 text-center font-heading text-lg border border-slate-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+                <div class="fraction-line my-1 !bg-indigo-400"></div>
+                <input type="number" id="ans-input-den" placeholder="3" min="1" max="50" class="w-12 h-10 text-center font-heading text-lg border border-slate-200 rounded-lg focus:border-indigo-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode 2: Pilihan Ganda -->
+          <div id="answer-mode-mcq" class="hidden w-full max-w-md grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Inject Pilihan Ganda -->
+          </div>
+
+          <!-- Tombol Cek Jawaban -->
+          <button id="btn-submit-answer" onclick="checkQuizAnswer()" class="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-heading text-lg rounded-2xl shadow-lg border-b-4 border-emerald-700 transition-all active:translate-y-1">
+            ✅ Cek Jawaban
+          </button>
+        </div>
+
+        <!-- Alert Feedback Live -->
+        <div id="quiz-feedback" class="mt-4 p-4 rounded-2xl text-center font-bold text-sm hidden transition-all">
+          <!-- Text Feedback -->
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p>Media Pembelajaran Matematika Kelas 5 SD - Pecahan Campuran Interaktif</p>
+  </footer>
+
+  <!-- Web Audio Synth API Script & Logic -->
+  <script>
+    /* ==========================================================================
+       AUDIO SYNTH (Web Audio API)
+       ========================================================================== */
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+    }
+
+    function playSound(type) {
+      try {
+        initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+          osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now); // A3
+          osc.frequency.setValueAtTime(180, now + 0.15);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        }
+      } catch (e) {
+        // Fallback jika audio tidak didukung
+      }
+    }
+
+    /* ==========================================================================
+       STATE MANAGEMENT
+       ========================================================================== */
+    let demoState = {
+      whole: 1,
+      num: 2,
+      den: 3,
+      shape: 'rect', // 'rect' atau 'circle'
+      shadedArray: [] // Array boolean untuk mengontrol status terarsir tiap potong
+    };
+
+    let quizState = {
+      score: 0,
+      streak: 0,
+      currentQuestion: null,
+      questionNumber: 1,
+      isMCQMode: false,
+      userShadedCount: 0 // Untuk tipe soal A (Visualisasi interaktif)
+    };
+
+    /* ==========================================================================
+       DEMO MODE LOGIC
+       ========================================================================== */
+    function updateDemoInput(field, delta) {
+      playSound('click');
+      if (field === 'whole') {
+        demoState.whole = Math.max(0, Math.min(5, demoState.whole + delta));
+      } else if (field === 'num') {
+        demoState.num = Math.max(0, Math.min(demoState.den - 1, demoState.num + delta));
+      } else if (field === 'den') {
+        const newDen = Math.max(1, Math.min(12, demoState.den + delta));
+        demoState.den = newDen;
+        if (demoState.num >= newDen) demoState.num = newDen - 1;
+      }
+      autoFillDemo();
+    }
+
+    function setDemoShape(shape) {
+      playSound('click');
+      demoState.shape = shape;
+      const btnRect = document.getElementById('btn-shape-rect');
+      const btnCircle = document.getElementById('btn-shape-circle');
+
+      if (shape === 'rect') {
+        btnRect.className = "py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-emerald-400 bg-emerald-50 text-emerald-800 flex items-center justify-center gap-2";
+        btnCircle.className = "py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-slate-200 bg-white text-slate-600 hover:border-emerald-300 flex items-center justify-center gap-2";
+      } else {
+        btnCircle.className = "py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-emerald-400 bg-emerald-50 text-emerald-800 flex items-center justify-center gap-2";
+        btnRect.className = "py-2.5 px-3 rounded-xl font-bold text-sm border-2 border-slate-200 bg-white text-slate-600 hover:border-emerald-300 flex items-center justify-center gap-2";
+      }
+      renderDemoVisuals();
+    }
+
+    function autoFillDemo() {
+      const totalUnits = demoState.whole + (demoState.num > 0 ? 1 : 0);
+      const unitsCount = Math.max(1, totalUnits);
+      const targetShaded = (demoState.whole * demoState.den) + demoState.num;
+
+      demoState.shadedArray = [];
+      for (let i = 0; i < unitsCount * demoState.den; i++) {
+        demoState.shadedArray.push(i < targetShaded);
+      }
+      updateDemoDOM();
+    }
+
+    function resetDemoShading() {
+      playSound('click');
+      demoState.shadedArray = demoState.shadedArray.map(() => false);
+      renderDemoVisuals();
+      updateDemoStats();
+    }
+
+    function toggleDemoPart(index) {
+      playSound('click');
+      demoState.shadedArray[index] = !demoState.shadedArray[index];
+      renderDemoVisuals();
+      updateDemoStats();
+    }
+
+    function updateDemoStats() {
+      const totalShaded = demoState.shadedArray.filter(Boolean).length;
+      document.getElementById('stat-shaded-count').textContent = totalShaded;
+    }
+
+    function updateDemoDOM() {
+      // Update angka pada kontrol UI
+      document.getElementById('demo-whole-val').textContent = demoState.whole;
+      document.getElementById('demo-num-val').textContent = demoState.num;
+      document.getElementById('demo-den-val').textContent = demoState.den;
+
+      // Update penjelas formula
+      document.getElementById('exp-whole').textContent = demoState.whole;
+      document.getElementById('exp-num').textContent = demoState.num;
+      document.getElementById('exp-den').textContent = demoState.den;
+
+      const improperNum = (demoState.whole * demoState.den) + demoState.num;
+      document.getElementById('exp-formula').textContent = `(${demoState.whole} × ${demoState.den}) + ${demoState.num}`;
+      document.getElementById('exp-formula-den').textContent = demoState.den;
+      document.getElementById('exp-formula-res').textContent = `${improperNum}/${demoState.den}`;
+
+      document.getElementById('exp-improper-num').textContent = improperNum;
+      document.getElementById('exp-improper-den').textContent = demoState.den;
+
+      renderDemoVisuals();
+      updateDemoStats();
+    }
+
+    function renderDemoVisuals() {
+      const container = document.getElementById('demo-visual-container');
+      container.innerHTML = '';
+
+      const totalUnits = demoState.whole + (demoState.num > 0 || demoState.whole === 0 ? 1 : 0);
+      const den = demoState.den;
+
+      for (let u = 0; u < totalUnits; u++) {
+        const unitWrapper = document.createElement('div');
+        unitWrapper.className = "flex flex-col items-center gap-2 bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm";
+        
+        const label = document.createElement('span');
+        label.className = "text-xs font-bold text-slate-500";
+        label.textContent = `Unit ${u + 1}`;
+        unitWrapper.appendChild(label);
+
+        if (demoState.shape === 'rect') {
+          const grid = document.createElement('div');
+          grid.className = "grid gap-1 bg-slate-100 p-2 rounded-xl border border-slate-300";
+          
+          // Kolom responsif sesuai jumlah penyebut
+          let cols = den <= 4 ? den : Math.ceil(den / 2);
+          grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+
+          for (let p = 0; p < den; p++) {
+            const globalIndex = (u * den) + p;
+            const isShaded = demoState.shadedArray[globalIndex] || false;
+
+            const part = document.createElement('div');
+            part.className = `w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs border-2 shape-part ${
+              isShaded 
+                ? 'bg-amber-400 border-amber-500 text-amber-950 shadow-sm' 
+                : 'bg-white border-slate-300 text-slate-400 hover:bg-slate-50'
+            }`;
+            part.onclick = () => toggleDemoPart(globalIndex);
+            part.textContent = `${p + 1}`;
+            grid.appendChild(part);
+          }
+          unitWrapper.appendChild(grid);
+
+        } else {
+          // Render SVG Circle (Pie Chart)
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 100 100");
+          svg.setAttribute("class", "w-32 h-32");
+
+          for (let p = 0; p < den; p++) {
+            const globalIndex = (u * den) + p;
+            const isShaded = demoState.shadedArray[globalIndex] || false;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            
+            // Hitung path SVG Pie slice
+            if (den === 1) {
+              path.setAttribute("d", "M 50,50 m -45,0 a 45,45 0 1,0 90,0 a 45,45 0 1,0 -90,0");
+            } else {
+              const startAngle = (p * 360 / den) - 90;
+              const endAngle = ((p + 1) * 360 / den) - 90;
+              const x1 = 50 + 45 * Math.cos(Math.PI * startAngle / 180);
+              const y1 = 50 + 45 * Math.sin(Math.PI * startAngle / 180);
+              const x2 = 50 + 45 * Math.cos(Math.PI * endAngle / 180);
+              const y2 = 50 + 45 * Math.sin(Math.PI * endAngle / 180);
+              const largeArcFlag = (endAngle - startAngle) <= 180 ? "0" : "1";
+
+              path.setAttribute("d", `M 50 50 L ${x1} ${y1} A 45 45 0 ${largeArcFlag} 1 ${x2} ${y2} Z`);
+            }
+
+            path.setAttribute("class", `shape-part stroke-white stroke-2 ${isShaded ? 'fill-amber-400 hover:fill-amber-500' : 'fill-slate-200 hover:fill-slate-300'}`);
+            path.onclick = () => toggleDemoPart(globalIndex);
+            svg.appendChild(path);
+          }
+          unitWrapper.appendChild(svg);
+        }
+
+        container.appendChild(unitWrapper);
+      }
+    }
+
+
+    /* ==========================================================================
+       QUIZ MODE LOGIC
+       ========================================================================== */
+    function switchTab(tab) {
+      playSound('click');
+      const secDemo = document.getElementById('section-demo');
+      const secQuiz = document.getElementById('section-quiz');
+      const btnDemo = document.getElementById('btn-tab-demo');
+      const btnQuiz = document.getElementById('btn-tab-quiz');
+
+      if (tab === 'demo') {
+        secDemo.classList.remove('hidden');
+        secQuiz.classList.add('hidden');
+        btnDemo.className = "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-white text-amber-900";
+        btnQuiz.className = "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all text-amber-800 hover:text-amber-950";
+      } else {
+        secQuiz.classList.remove('hidden');
+        secDemo.classList.add('hidden');
+        btnQuiz.className = "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-sm bg-white text-amber-900";
+        btnDemo.className = "flex-1 sm:flex-none px-5 py-2 rounded-xl font-bold text-sm transition-all text-amber-800 hover:text-amber-950";
+        
+        if (!quizState.currentQuestion) {
+          generateNewQuiz();
+        }
+      }
+    }
+
+    function toggleAnswerMode() {
+      playSound('click');
+      quizState.isMCQMode = !quizState.isMCQMode;
+      document.getElementById('text-input-mode').textContent = quizState.isMCQMode ? 'Pilihan Ganda' : 'Isian Pecahan';
+      renderQuizAnswerArea();
+    }
+
+    function generateNewQuiz() {
+      document.getElementById('quiz-feedback').classList.add('hidden');
+      document.getElementById('quiz-number').textContent = quizState.questionNumber;
+
+      // Pilih acak tipe soal: A (Visual Interactive), B (Conversion), C (Guess from Visual)
+      const types = ['A', 'B', 'C'];
+      const chosenType = types[Math.floor(Math.random() * types.length)];
+
+      const den = [2, 3, 4, 5, 6][Math.floor(Math.random() * 5)];
+      const whole = Math.floor(Math.random() * 2) + 1; // 1 - 2
+      const num = Math.floor(Math.random() * (den - 1)) + 1; // 1 s/d den-1
+
+      quizState.currentQuestion = {
+        type: chosenType,
+        whole: whole,
+        num: num,
+        den: den,
+        improperNum: (whole * den) + num,
+        userShaded: 0
+      };
+
+      const badge = document.getElementById('quiz-type-badge');
+      const qText = document.getElementById('quiz-question-text');
+
+      if (chosenType === 'A') {
+        badge.textContent = "Tipe Soal A: Mewarnai Visual";
+        qText.innerHTML = `Warnai petak di bawah agar bernilai pecahan <div class="fraction-display text-indigo-600"><span class="mr-1">${whole}</span><div class="fraction-stacked"><span class="text-sm">${num}</span><div class="fraction-line"></div><span class="text-sm">${den}</span></div></div> !`;
+      } else if (chosenType === 'B') {
+        badge.textContent = "Tipe Soal B: Ubah ke Pecahan Biasa";
+        qText.innerHTML = `Ubah pecahan campuran <div class="fraction-display text-indigo-600"><span class="mr-1">${whole}</span><div class="fraction-stacked"><span class="text-sm">${num}</span><div class="fraction-line"></div><span class="text-sm">${den}</span></div></div> menjadi pecahan biasa!`;
+      } else if (chosenType === 'C') {
+        badge.textContent = "Tipe Soal C: Tebak Nilai Pecahan";
+        qText.innerHTML = `Berapakah nilai pecahan campuran dari bentuk visual di bawah ini?`;
+      }
+
+      renderQuizInteractiveArea();
+      renderQuizAnswerArea();
+    }
+
+    function renderQuizInteractiveArea() {
+      const area = document.getElementById('quiz-interactive-area');
+      area.innerHTML = '';
+
+      const q = quizState.currentQuestion;
+
+      if (q.type === 'A') {
+        // Area interaktif untuk diwarnai oleh siswa
+        const totalUnits = q.whole + 1;
+        quizState.userShadedCount = 0;
+
+        for (let u = 0; u < totalUnits; u++) {
+          const grid = document.createElement('div');
+          grid.className = "flex gap-1.5 bg-white p-3 rounded-2xl border-2 border-indigo-200 shadow-sm";
+
+          for (let p = 0; p < q.den; p++) {
+            const btn = document.createElement('button');
+            btn.className = "w-10 h-10 rounded-xl bg-slate-100 border-2 border-slate-300 hover:bg-indigo-50 font-bold text-xs text-transparent transition-all";
+            btn.onclick = () => {
+              playSound('click');
+              if (btn.classList.contains('bg-amber-400')) {
+                btn.className = "w-10 h-10 rounded-xl bg-slate-100 border-2 border-slate-300 hover:bg-indigo-50 font-bold text-xs text-transparent transition-all";
+                quizState.userShadedCount--;
+              } else {
+                btn.className = "w-10 h-10 rounded-xl bg-amber-400 border-2 border-amber-500 font-bold text-xs text-amber-950 shadow-sm transition-all";
+                quizState.userShadedCount++;
+              }
+            };
+            grid.appendChild(btn);
+          }
+          area.appendChild(grid);
+        }
+
+      } else if (q.type === 'B') {
+        // Tampilkan Maskot / Ilustrasi lucu
+        area.innerHTML = `
+          <div class="text-center py-2">
+            <div class="text-5xl mb-2 bounce-gentle">🤔 ➡️ 📐</div>
+            <p class="text-xs font-bold text-slate-500">Petunjuk: Kalikan (Utuh × Penyebut) lalu tambahkan Pembilang!</p>
+          </div>
+        `;
+      } else if (q.type === 'C') {
+        // Tampilkan gambar visual yang sudah terarsir fix
+        const totalShadedTarget = q.improperNum;
+        const totalUnits = q.whole + (q.num > 0 ? 1 : 0);
+
+        for (let u = 0; u < totalUnits; u++) {
+          const grid = document.createElement('div');
+          grid.className = "flex gap-1.5 bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm";
+
+          for (let p = 0; p < q.den; p++) {
+            const index = (u * q.den) + p;
+            const isShaded = index < totalShadedTarget;
+
+            const box = document.createElement('div');
+            box.className = `w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs ${
+              isShaded 
+                ? 'bg-amber-400 border-2 border-amber-500 text-amber-950 shadow-sm' 
+                : 'bg-slate-100 border-2 border-slate-200 text-slate-400'
+            }`;
+            grid.appendChild(box);
+          }
+          area.appendChild(grid);
+        }
+      }
+    }
+
+    function renderQuizAnswerArea() {
+      const modeInput = document.getElementById('answer-mode-input');
+      const modeMCQ = document.getElementById('answer-mode-mcq');
+      const btnSubmit = document.getElementById('btn-submit-answer');
+      const wholeInput = document.getElementById('ans-input-whole');
+      const stackedContainer = document.getElementById('ans-stacked-container');
+
+      // Clear Inputs
+      wholeInput.value = '';
+      document.getElementById('ans-input-num').value = '';
+      document.getElementById('ans-input-den').value = '';
+
+      const q = quizState.currentQuestion;
+
+      if (q.type === 'A') {
+        // Pada tipe A, jawabannya adalah mewarnai visual. Tombol langsung "Cek Mewarnai"
+        modeInput.classList.add('hidden');
+        modeMCQ.classList.add('hidden');
+        btnSubmit.textContent = "✅ Cek Visualisasilah";
+        return;
+      }
+
+      btnSubmit.textContent = "✅ Cek Jawaban";
+
+      if (quizState.isMCQMode) {
+        modeInput.classList.add('hidden');
+        modeMCQ.classList.remove('hidden');
+
+        // Generate pilihan ganda
+        let options = [];
+        if (q.type === 'B') {
+          // Jawabannya Pecahan Biasa (improperNum / den)
+          const correctStr = `${q.improperNum}/${q.den}`;
+          options.push(correctStr);
+          options.push(`${q.improperNum + 1}/${q.den}`);
+          options.push(`${q.improperNum - 1}/${q.den}`);
+          options.push(`${q.improperNum}/${q.den + 1}`);
+        } else {
+          // Jawabannya Pecahan Campuran
+          const correctStr = `${q.whole} ${q.num}/${q.den}`;
+          options.push(correctStr);
+          options.push(`${q.whole + 1} ${q.num}/${q.den}`);
+          options.push(`${q.whole} ${q.num + 1}/${q.den}`);
+          options.push(`${q.whole + 1} 1/${q.den}`);
+        }
+
+        // Acak Opsi
+        options.sort(() => Math.random() - 0.5);
+
+        modeMCQ.innerHTML = '';
+        options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = "p-3 bg-white hover:bg-indigo-50 border-2 border-indigo-200 rounded-xl font-heading text-lg text-indigo-900 shadow-sm text-center transition-all focus:ring-2 focus:ring-indigo-400";
+          btn.textContent = opt;
+          btn.onclick = () => {
+            playSound('click');
+            // Unselect others
+            Array.from(modeMCQ.children).forEach(c => c.classList.remove('border-indigo-600', 'bg-indigo-100'));
+            btn.classList.add('border-indigo-600', 'bg-indigo-100');
+            btn.dataset.selected = "true";
+          };
+          modeMCQ.appendChild(btn);
+        });
+
+      } else {
+        modeInput.classList.remove('hidden');
+        modeMCQ.classList.add('hidden');
+
+        if (q.type === 'B') {
+          // Ingin pecahan biasa (Sembunyikan input bilangan bulat)
+          wholeInput.classList.add('hidden');
+        } else {
+          // Pecahan campuran (Tampilkan input bilangan bulat)
+          wholeInput.classList.remove('hidden');
+        }
+      }
+    }
+
+    function checkQuizAnswer() {
+      const q = quizState.currentQuestion;
+      const feedback = document.getElementById('quiz-feedback');
+      let isCorrect = false;
+
+      if (q.type === 'A') {
+        // Cek jumlah petak diarsir
+        if (quizState.userShadedCount === q.improperNum) {
+          isCorrect = true;
+        }
+      } else if (quizState.isMCQMode) {
+        const selectedBtn = document.querySelector('#answer-mode-mcq button[data-selected="true"]');
+        if (selectedBtn) {
+          const val = selectedBtn.textContent.trim();
+          if (q.type === 'B' && val === `${q.improperNum}/${q.den}`) isCorrect = true;
+          if (q.type === 'C' && val === `${q.whole} ${q.num}/${q.den}`) isCorrect = true;
+        }
+      } else {
+        // Cek Input Pecahan Stacked
+        const userWhole = parseInt(document.getElementById('ans-input-whole').value) || 0;
+        const userNum = parseInt(document.getElementById('ans-input-num').value) || 0;
+        const userDen = parseInt(document.getElementById('ans-input-den').value) || 0;
+
+        if (q.type === 'B') {
+          if (userNum === q.improperNum && userDen === q.den) isCorrect = true;
+        } else if (q.type === 'C') {
+          if (userWhole === q.whole && userNum === q.num && userDen === q.den) isCorrect = true;
+        }
+      }
+
+      feedback.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
+
+      if (isCorrect) {
+        playSound('correct');
+        confetti({ particleCount: 60, spread: 60, origin: { y: 0.7 } });
+
+        quizState.score += 10;
+        quizState.streak += 1;
+        document.getElementById('quiz-score').textContent = quizState.score;
+        document.getElementById('quiz-streak').textContent = quizState.streak;
+
+        feedback.classList.add('bg-emerald-100', 'text-emerald-800');
+        feedback.innerHTML = "🎉 **Hore, Jawabanmu Benar!** Kamu hebat sekali!";
+
+        setTimeout(() => {
+          quizState.questionNumber++;
+          generateNewQuiz();
+        }, 1800);
+
+      } else {
+        playSound('wrong');
+        quizState.streak = 0;
+        document.getElementById('quiz-streak').textContent = 0;
+
+        feedback.classList.add('bg-rose-100', 'text-rose-800');
+        
+        let correctText = "";
+        if (q.type === 'A') correctText = `${q.improperNum} petak`;
+        else if (q.type === 'B') correctText = `${q.improperNum}/${q.den}`;
+        else correctText = `${q.whole} ${q.num}/${q.den}`;
+
+        feedback.innerHTML = `❌ **Yuk Coba Lagi!** Jawaban yang tepat adalah **${correctText}**.`;
+      }
+    }
+
+    /* ==========================================================================
+       INITIALIZATION
+       ========================================================================== */
+    window.onload = function() {
+      autoFillDemo();
+    };
+  </script>
+</body>
+</html>
